@@ -1,0 +1,14 @@
+//Licensed under the MIT License
+
+@import "../assets/style/globals.scss";
+
+.home{
+    color: #444;
+    padding: 20px;
+    background-color: #FFFFFF;
+
+    p.boxed{
+        border: 1px solid #222;
+        padding: 10px;
+    }
+}

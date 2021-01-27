@@ -1,0 +1,13 @@
+.form {
+    padding: 1em;
+  }
+  
+  label {
+    display: flex;
+    font-weight: 900;
+  }
+  
+  button {
+    justify-content: flex-end;
+    color: #00305e;
+  }

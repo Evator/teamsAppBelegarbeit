@@ -1,0 +1,7 @@
+runtime: nodejs
+env: flex
+automatic_scaling:
+  min_num_instances: 1
+  max_num_instances: 7
+beta_settings:
+      cloud_sql_instances: fragebogen-297200:europe-west6:teamsapp
