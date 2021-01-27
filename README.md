@@ -14,6 +14,8 @@ Express ist ein leistungsfähiges Node.js-Framework. Es stellt einige Funktionen
 * **MYSQL(Data):**: MySQL ist ein relationales Datenbankverwaltungssystem, welches im Projekt zur Speicherung der gesammlten quantitativen Daten genutzt wird. . (https://www.mysql.com/de/)
 
 ## Vorraussetzungen
+-[MYSQL Datenbankserver]
+
 - [NodeJS] Download und Installation von NodeJS: Link:  https://nodejs.org/en/
 
 - [M365 developer account] oder Zugriff zu einem Teams Account mit den nötigen Rechten zum hinzufügen/installieren von Apps. 
