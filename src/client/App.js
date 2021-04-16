@@ -11,6 +11,7 @@ import TabConfig from './TabConfig';
 import CompanyData from './CompanyData'
 import * as utils from './utils/utils';
 import companyDataWithoutTeams from './companyDataTestWithoutTeams';
+import surveyTestWithoutTeasm from './SurveyTestWithoutTeams';
 /**
  * The main app which handles the initialization and routing
  * of the app.
@@ -34,6 +35,7 @@ function App() {
           <Route exact path="/config" component={TeamsHostError} />
           <Route excat path="/companyData" component={TeamsHostError} />
           <Route excat path="/companyData2" component={companyDataWithoutTeams} />
+          <Route excat path="/survey" component={surveyTestWithoutTeasm} />
         </Router>
       );
     }

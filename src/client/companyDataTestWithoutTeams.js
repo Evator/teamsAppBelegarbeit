@@ -22,7 +22,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    this.state.Team_Name = 'Team2';
+    this.state.Team_Name = 'Team5';
 
 
     try {
