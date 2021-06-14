@@ -4,6 +4,7 @@ import {
   FormGroup, Label, Input,
   Button, FormText, FormFeedback,
 } from 'reactstrap';
+
 import './CompanyData.css';
 
 class App extends Component {
@@ -141,29 +142,20 @@ class App extends Component {
             </FormGroup>
           </Col>
           <Col>
-            <FormGroup>
-              <Label>E-Mail-Adresse:</Label>
-              <Input
-                type="email"
-                name="mailInput"
-                id="mailInputID"
-                placeholder={this.state.Mail}
-                value={email}
-                valid={this.state.validate.emailState === 'has-success'}
-                invalid={this.state.validate.emailState === 'has-danger'}
-                onChange={(e) => {
-                  this.validateEmail(e);
-                  this.handleChange(e);
-                }}
-              />
-              <FormFeedback valid>
+          <FormGroup>
+        <Label for="exampleEmail">Email</Label>
+        <Input type="email" name="mailInput" id="mailInputID" placeholder={this.state.email} onChange={e => {this.handleChange(e); this.validateEmail(e);}} valid={this.state.validate.emailState === 'has-success'}
+                invalid={this.state.validate.emailState === 'has-danger'}/>
+        <FormFeedback valid>
                 Das ist eine valide E-Mail-Adresse!.
               </FormFeedback>
-              <FormFeedback>
+              <FormFeedback invalid>
                 Bitte geben Sie eine valide E-Mail-Adresse an!
               </FormFeedback>
               <FormText>Die E-Mail-Adresse Ihres Unternehmens</FormText>
-            </FormGroup>
+           </FormGroup>
+          </Col>
+          <Col>
           </Col>
           <Button color="primary">Absenden</Button>
         </Form>
