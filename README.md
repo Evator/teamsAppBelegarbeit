@@ -11,10 +11,10 @@ Die Anwendung baisert auf einer Drei-Schichten-Architektur und verwendet dafür 
 NodeJS ist eine Laufzeitumgebung, die das Ausführen von JavaScript Code außerhalb des Webbrowsers ermöglicht. In diesem Projekt wird es zum Ausführen des Webservers genutzt. (https://nodejs.org/en/) 
 Express ist ein leistungsfähiges Node.js-Framework. Es stellt einige Funktionen von Webanwendungen bereit. Dabei sind vor allem die Möglichkeiten zur Erstellung von APIs und Webserverfunktionen für dieses Projekt relevant. (https://expressjs.com/de/)
 
-* **MYSQL(Data):**: MySQL ist ein relationales Datenbankverwaltungssystem, welches im Projekt zur Speicherung der gesammlten quantitativen Daten genutzt wird. . (https://www.mysql.com/de/)
+* **PostgreSQL(Data):**: PostgreSQL ist ein relationales Datenbankverwaltungssystem, welches im Projekt zur Speicherung der gesammlten quantitativen Daten genutzt wird. . (https://www.postgresql.org/)
 
 ## Vorraussetzungen
-- [MYSQL Datenbankserver]
+- [PostgreSQL Datenbankserver]
 
 - [NodeJS] Download und Installation von NodeJS: Link:  https://nodejs.org/en/
 
