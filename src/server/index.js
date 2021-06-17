@@ -5,6 +5,10 @@ const mysql = require('mysql');
 const bodyParser = require('body-parser');
 const connection = require('./dbConnection');
 const query = require('./dbQuery');
+const pg = require('./postgresConnection');
+const variables = require('./postgresVariables');
+const db = require('./postgresConnection');
+
 
 // Database Config
 // Get the Host from Environment or use default
@@ -19,15 +23,10 @@ const password = process.env.DB_PASS || 'password';
 // Get the Database from Environment or use default
 const database = process.env.DB_DATABASE || 'teamsapp';
 
-const sqlCommandCreateDB1 = 'create schema IF NOT EXISTS teamsapp;';
-const sqlCommandCreateDB2 = 'CREATE TABLE IF NOT EXISTS `befragung` ( `id_Befragung` int NOT NULL AUTO_INCREMENT,`Datum` datetime DEFAULT NULL, `Ergebnis` json DEFAULT NULL,`id_Mitarbeiter` int DEFAULT NULL,PRIMARY KEY (`id_Befragung`),KEY `id_Mitarbeiter_idx` (`id_Mitarbeiter`),CONSTRAINT `id_Mitarbeiter` FOREIGN KEY (`id_Mitarbeiter`) REFERENCES `mitarbeiter` (`id_mitarbeiter`));';
-const sqlCommandCreateDB3 = 'CREATE TABLE IF NOT EXISTS `job_position` (`id_Position` int NOT NULL AUTO_INCREMENT,`Position_Name` varchar(45) DEFAULT NULL,`Datum` datetime DEFAULT CURRENT_TIMESTAMP,`id_Mitarbeiter` int DEFAULT NULL,PRIMARY KEY (`id_Position`),KEY `id_Mitarb_idx` (`id_Mitarbeiter`),CONSTRAINT `id_Mitarb` FOREIGN KEY (`id_Mitarbeiter`) REFERENCES `mitarbeiter` (`id_mitarbeiter`));';
-const sqlCommandCreateDB4 = 'CREATE TABLE IF NOT EXISTS `mitarbeiter` (`id_mitarbeiter` int NOT NULL AUTO_INCREMENT,`id_Unternehmen` int DEFAULT NULL,`E_Mail_Adresse` varchar(45) DEFAULT NULL,`TeamsID` varchar(45) NOT NULL,PRIMARY KEY (`id_mitarbeiter`,`TeamsID`),KEY `id_Unternehmen_idx` (`id_Unternehmen`),CONSTRAINT `id_Unternehmen` FOREIGN KEY (`id_Unternehmen`) REFERENCES `unternehmen` (`id_Unternehmen`));';
-const sqlCommandCreateDB5 = 'CREATE TABLE `unternehmen` (`id_Unternehmen` int NOT NULL AUTO_INCREMENT,`Team` varchar(45) NOT NULL,`Bezeichnung` varchar(45) DEFAULT NULL,`Mitarbeiterzahl` varchar(45) DEFAULT NULL,`Adresse` varchar(45) DEFAULT NULL,`E_Mail_Adresse` varchar(45) DEFAULT NULL,PRIMARY KEY (`id_Unternehmen`,`Team`));';
+
 
 
 const app = express();
-
 app.use(express.static('dist'));
 app.get('/api/getUsername', (req, res) => res.send({ username: os.userInfo().username }));
 
@@ -40,37 +39,36 @@ app.get('/*', (req, res) => {
   });
 });
 app.use(bodyParser.json());
+
+
 app.post('/surveydata', async (req, res) => {
-  // create db connection
-  const conn = await connection({
-    host, user, password, database,
-  }).catch((e) => {});
-  // create db if doesn't exists
-  await query(conn, sqlCommandCreateDB1).catch(console.log);
-  await query(conn, sqlCommandCreateDB2).catch(console.log);
-  await query(conn, sqlCommandCreateDB3).catch(console.log);
-  await query(conn, sqlCommandCreateDB4).catch(console.log);
-  await query(conn, sqlCommandCreateDB5).catch(console.log);
+ 
+ 
+  //select schema
+  await pg.any("SET search_path TO $1",[variables.schema]).catch(console.log);
+
   // Check if Mitarbeiter exists
-  const MitarbeiterExists = await query(conn, `Select id_Mitarbeiter from Mitarbeiter Where TeamsID = '${req.body.Mitarbeiter_ID}'`).catch(console.log);
-
+  const MitarbeiterExists = await pg.any( `Select id_Mitarbeiter from Mitarbeiter Where mitarbeiter."TeamsID" = $1`, [req.body.Mitarbeiter_ID]).catch(console.log);
+ 
+  
   if (!MitarbeiterExists[0]) {
-    // Check if Unternehmen exists
-    const UnternehmenExists = await query(conn, `Select id_Unternehmen from Unternehmen Where Team = '${req.body.Team_Name}'`).catch(console.log);
+    // Check if entry for Unternehmen exists
+    const UnternehmenExists = await pg.any( `Select unternehmen."id_Unternehmen" from Unternehmen Where unternehmen."Team" = $1`,[req.body.Team_Name]).catch(console.log);
     if (!UnternehmenExists[0]) {
-      // if Unternehmen doesn't exist, create new Unternehmen
-      await query(conn, `Insert Into Unternehmen (Team) Values ('${req.body.Team_Name}')`).catch(console.log);
+      // if entry for Unternehmen doesn't exist, create new entry
+      await pg.any( `Insert Into Unternehmen ("Team") Values ($1)`,[req.body.Team_Name]).catch(console.log);
     }
-    const idUnternehmen = await query(conn, `Select id_Unternehmen from unternehmen Where Team = '${req.body.Team_Name}'`).catch(console.log);
-    // if Mitarbeiter doesn't exist, create new Mitarbeiter
-    await query(conn, `Insert Into Mitarbeiter (id_unternehmen, E_Mail_Adresse, TeamsID) Values (${idUnternehmen[0].id_Unternehmen}, '${req.body.Mail}', '${req.body.Mitarbeiter_ID}')`).catch(console.log);
+    const idUnternehmen = await pg.any(`Select unternehmen."id_Unternehmen" from unternehmen Where unternehmen."Team" = $1` ,[req.body.Team_Name]).catch(console.log);
+    // if entry for Mitarbeiter doesn't exist, create new entry
+    await pg.any( `Insert Into Mitarbeiter ("id_Unternehmen", "E_Mail_Adresse", "TeamsID") Values ($1, $2, $3)`,[JSON.stringify(idUnternehmen[0].id_Unternehmen), req.body.Mail, req.body.Mitarbeiter_ID]).catch(console.log);
   }
-  // create new Befragungs-entry in database
-  const idMitarbeiter = await query(conn, `Select id_Mitarbeiter from mitarbeiter Where TeamsID = '${req.body.Mitarbeiter_ID}'`).catch(console.log);
-
+  // create new entry for Befragung 
+ 
+  const idMitarbeiter = await pg.any(`Select id_Mitarbeiter from mitarbeiter Where mitarbeiter."TeamsID" = $1`,[req.body.Mitarbeiter_ID]).catch(console.log);
 
   // create new Position entry in db
-  await query(conn, `Insert Into job_position (Datum, Position_Name, id_Mitarbeiter) Values (Now(),${JSON.stringify(req.body.Rolle)}, ${idMitarbeiter[0].id_Mitarbeiter})`).catch(console.log);
+ 
+  await pg.any(`Insert Into job_position ("Datum", "Position_Name", "id_Mitarbeiter") Values (Now(), $1, $2)`,[JSON.stringify(req.body.Rolle), JSON.stringify(idMitarbeiter[0].id_mitarbeiter)]).catch(console.log);
 
   // delete unneccssary content from req.body
   delete req.body.Rolle;
@@ -80,66 +78,44 @@ app.post('/surveydata', async (req, res) => {
 
   // write entry for results
   const result_data = JSON.stringify(req.body);
-  await query(conn, `Insert Into befragung (Datum, Ergebnis, id_Mitarbeiter) Values (NOW(),'${result_data}','${idMitarbeiter[0].id_Mitarbeiter}')`).catch(console.log);
+  await pg.any(`Insert Into befragung ("Datum", "Ergebnis", "id_Mitarbeiter") Values (NOW(), $1, $2)`,[result_data,JSON.stringify(idMitarbeiter[0].id_mitarbeiter)]).catch(console.log);
 
-  // end connection
-  conn.end();
 
   return res.send('Received a POST HTTP method');
 });
 
 
+
+
 app.post('/companyDataGet', async (req, res) => {
-  // create db connection
-  const conn = await connection({
-    host, user, password, database,
-  }).catch((e) => {});
-  // create db if doesn't exists
-  await query(conn, sqlCommandCreateDB1).catch(console.log);
-  await query(conn, sqlCommandCreateDB2).catch(console.log);
-  await query(conn, sqlCommandCreateDB3).catch(console.log);
-  await query(conn, sqlCommandCreateDB4).catch(console.log);
-  await query(conn, sqlCommandCreateDB5).catch(console.log);
+
+   //select schema
+   await pg.any("SET search_path TO $1",[variables.schema]).catch(console.log);
 
   // getCompanyData
-  const Unternehmen = await query(conn, `Select Bezeichnung, Mitarbeiterzahl, Adresse, E_Mail_Adresse from Unternehmen Where Team = '${req.body.Team_Name}'`).catch(console.log);
+  const Unternehmen = await pg.any(`Select "Bezeichnung", "Mitarbeiterzahl", "Adresse", "E_Mail_Adresse" from Unternehmen Where "Team" = $1`,[JSON.stringify(req.body.Team_Name)]).catch(console.log);
   console.log(Unternehmen);
-
-
-  // end connection
-  conn.end();
 
   return res.send(JSON.stringify(Unternehmen));
 });
 
 
 app.post('/companyDataSet', async (req, res) => {
-  // create db connection
-  const conn = await connection({
-    host, user, password, database,
-  }).catch((e) => {});
-  // create db if doesn't exists
-  await query(conn, sqlCommandCreateDB1).catch(console.log);
-  await query(conn, sqlCommandCreateDB2).catch(console.log);
-  await query(conn, sqlCommandCreateDB3).catch(console.log);
-  await query(conn, sqlCommandCreateDB4).catch(console.log);
-  await query(conn, sqlCommandCreateDB5).catch(console.log);
+
+  await pg.any("SET search_path TO $1",[variables.schema]).catch(console.log);
 
   // Check if Unternehmen exists
-  const UnternehmenExists = await query(conn, `Select id_Unternehmen from Unternehmen Where Team = '${req.body.Team_Name}'`).catch(console.log);
+  const UnternehmenExists = await pg.any(`Select "id_Unternehmen" from Unternehmen Where "Team" = $1`,[JSON.stringify(req.body.Team_Name)]).catch(console.log);
   if (!UnternehmenExists[0]) {
   // if Unternehmen doesn't exist, create new Unternehmen
-    await query(conn, `Insert Into Unternehmen (Team, Bezeichnung, Mitarbeiterzahl, Adresse, E_Mail_Adresse) Values ('${req.body.Team_Name}', '${req.body.BezeichnungInput}', '${req.body.MitarbeiterzahlInput}','${req.body.AdresseInput}','${req.body.mailInput}')`).catch(console.log);
+    await pg.any(`Insert Into Unternehmen ("Team", "Bezeichnung", "Mitarbeiterzahl", "Adresse", "E_Mail_Adresse") Values ($1, $2, $3, $4, $5)`,[JSON.stringify(req.body.Team_Name),JSON.stringify(req.body.BezeichnungInput), JSON.stringify(req.body.MitarbeiterzahlInput), JSON.stringify(req.body.AdresseInput), JSON.stringify(req.body.mailInput)]).catch(console.log);
   }
 
   // if Unternehmen exists, update values
   else {
-    await query(conn, `Update Unternehmen SET Bezeichnung='${req.body.BezeichnungInput}', Mitarbeiterzahl='${req.body.MitarbeiterzahlInput}', Adresse='${req.body.AdresseInput}', E_Mail_Adresse='${req.body.mailInput}' WHERE Team='${req.body.Team_Name}'`).catch(console.log);
+    await pg.any( `Update Unternehmen SET "Bezeichnung"= $1, "Mitarbeiterzahl"= $2, "Adresse"= $3, "E_Mail_Adresse"= $4 WHERE "Team"= $5`,[JSON.stringify(req.body.BezeichnungInput), JSON.stringify(req.body.MitarbeiterzahlInput),JSON.stringify(req.body.AdresseInput), JSON.stringify(req.body.mailInput), JSON.stringify(req.body.Team_Name)] ).catch(console.log);
   }
-
-
-  // end connection
-  conn.end();
+  
   return res.send(JSON.stringify(UnternehmenExists));
 });
 
