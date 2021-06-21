@@ -8,7 +8,9 @@ const query = require('./dbQuery');
 const pg = require('./postgresConnection');
 const variables = require('./postgresVariables');
 const db = require('./postgresConnection');
-
+var https = require('https');
+var http = require('http');
+var fs = require('fs');
 
 // Database Config
 // Get the Host from Environment or use default
@@ -119,5 +121,20 @@ app.post('/companyDataSet', async (req, res) => {
   return res.send(JSON.stringify(UnternehmenExists));
 });
 
+//ssl options 
+/*
+var options = {
+  key: fs.readFileSync('/path/to/key.pem'),
+  cert: fs.readFileSync('/path/to/cert.pem'),
+  ca: fs.readFileSync('/path/to/ca.pem')
+};
 
-app.listen(process.env.PORT || 3001, () => console.log(`Listening on port ${process.env.PORT || 3001}!`));
+*/
+//server
+var serverHTTP = http.createServer(app).listen(3001);
+
+/*
+var serverHTTPS = http.createServer(options, app).listen(3002); 
+*/
+
+
