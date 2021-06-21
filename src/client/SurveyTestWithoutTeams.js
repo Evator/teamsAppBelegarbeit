@@ -252,7 +252,7 @@ export default class SurveyComponent extends React.Component {
         body: JSON.stringify(surveyresults)
       };
 
-      fetch('http://localhost:8080/surveydata', requestOptions)
+      fetch('/surveydata', requestOptions)
         .then(response => response.json())
         .then(this.setState({ isCompleted: true }));
     } catch (e) {

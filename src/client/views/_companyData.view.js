@@ -55,7 +55,7 @@ class HomeView extends React.Component {
         body: JSON.stringify(this.state)
       };
 
-      fetch('http://localhost:8080/companyDataGet', requestOptions)
+      fetch('/companyDataGet', requestOptions)
         .then(response => response.json())
         .then((res) => {
           console.log(res[0]);
@@ -102,7 +102,7 @@ class HomeView extends React.Component {
         body: JSON.stringify(this.state)
       };
 
-      fetch('http://localhost:8080/companyDataSet', requestOptions)
+      fetch('/companyDataSet', requestOptions)
         .then(response => response.json())
         .then((res) => {
           this.setState({

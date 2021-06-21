@@ -1,3 +1,4 @@
+//For MySQL - currently not used
 
 // query async
 module.exports = async (conn, q, params) => new Promise(
@@ -10,6 +11,6 @@ module.exports = async (conn, q, params) => new Promise(
       resolve(result);
     };
     consolge.log(q);
-    conn.query(q, handler);
+    conn.query(q, params, handler);
   }
 );

@@ -1,3 +1,5 @@
+//For MySQL - currently not used
+
 
 const mysql = require('mysql');
 // connect to db

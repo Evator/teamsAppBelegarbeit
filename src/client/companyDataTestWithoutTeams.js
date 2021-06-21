@@ -33,7 +33,7 @@ class App extends Component {
         body: JSON.stringify(this.state)
       };
 
-      fetch('http://localhost:8080/companyDataGet', requestOptions)
+      fetch('/companyDataGet', requestOptions)
         .then(response => response.json())
         .then((res) => {
           console.log(res[0]);
@@ -77,7 +77,7 @@ class App extends Component {
         body: JSON.stringify(this.state)
       };
 
-      fetch('http://localhost:8080/companyDataSet', requestOptions)
+      fetch('/companyDataSet', requestOptions)
         .then(response => response.json())
         .then((res) => {
           this.setState({
@@ -144,7 +144,7 @@ class App extends Component {
           <Col>
           <FormGroup>
         <Label for="exampleEmail">Email</Label>
-        <Input type="email" name="mailInput" id="mailInputID" placeholder={this.state.email} onChange={e => {this.handleChange(e); this.validateEmail(e);}} valid={this.state.validate.emailState === 'has-success'}
+        <Input type="email" name="mailInput" id="mailInputID" placeholder={this.state.Mail} onChange={e => {this.handleChange(e); this.validateEmail(e);}} valid={this.state.validate.emailState === 'has-success'}
                 invalid={this.state.validate.emailState === 'has-danger'}/>
         <FormFeedback valid>
                 Das ist eine valide E-Mail-Adresse!.
